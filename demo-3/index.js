@@ -21,13 +21,6 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.03;
 
-const points = spline.getPoints(100);
-const geometry = new THREE.BufferGeometry().setFromPoints(points);
-const material = new THREE.LineBasicMaterial({
-    color: 0xff0000
-});
-const line = new THREE.Line(geometry, material);
-
 const tubeGeometry = new THREE.TubeGeometry(spline, 222, 0.65, 16, true);
 const tubeMaterial = new THREE.MeshBasicMaterial({
     color: 0x0099ff,
@@ -73,7 +66,7 @@ for (let i = 0; i < numBoxes; i += 1) {
 
 
 function updateCamera(t) {
-    const time = t * 0.5;
+    const time = t * 0.05;
     const looptime = 20*1000;
     const p = (time % looptime) / looptime;
     const pos = tubeGeometry.parameters.path.getPointAt(p);
