@@ -5,52 +5,36 @@ import { OrbitControls } from "jsm/controls/OrbitControls.js";
 const height = window.innerHeight;
 const width = window.innerWidth;
 
-const renderer = new THREE.WebGLRenderer({ antialias:true});
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+camera.position.z = 5;
 
+const renderer = new THREE.WebGLRenderer();
 renderer.setSize(width, height);
-
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(renderer.domElement);
 
-
-const fov = 75;
-const aspect = width / height;
-const near = 0.1;
-const far = 10;
-
-const camera = new THREE.PerspectiveCamera(fov, aspect, near, far)
-
-camera.position.z = 2;
-
-const scene = new THREE.Scene();
-
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
+controls.enableDampign = true;
 controls.dampingFactor = 0.03;
 
-const geo = new THREE.IcosahedronGeometry(1.0, 2);
-const mat = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
-    flatShading: true
+const geometry = new THREE.BoxGeometry();
+const material = new THREE.MeshStandardMaterial({
+    color: 0xffff00
 });
 
-const mesh = new THREE.Mesh(geo, mat);
-scene.add(mesh);
+const cube = new THREE.Mesh(geometry, material);
+scene.add(cube);
 
-const wireMat = new THREE.MeshBasicMaterial({
-    color: 0xffffff,
-    wireframe: true
-});
-
-const wireMesh = new THREE.Mesh(geo, wireMat);
-wireMesh.scale.setScalar(1.001);
-mesh.add(wireMesh);
-
-const hemiLight = new THREE.HemisphereLight(0x0099ff, 0xaa5500);
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
 scene.add(hemiLight);
 
-function animate(t = 0) {
+function animate(){
     requestAnimationFrame(animate);
-    mesh.rotation.y = t * 0.0001;
+
+    cube.rotation.x += 0.01;
+    cube.rotation.y += 0.02;
     renderer.render(scene, camera);
     controls.update();
 }
