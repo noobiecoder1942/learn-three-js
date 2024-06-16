@@ -42,12 +42,42 @@ const lineMaterial = new THREE.LineBasicMaterial({
 const tubeLines = new THREE.LineSegments(edges, lineMaterial);
 scene.add(tubeLines);
 
+const numBoxes = 50;
+const boxSize = 0.075;
+const boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+const boxMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    wireframe: true
+});
+
+for (let i = 0; i < numBoxes; i += 1) {
+    const box = new THREE.Mesh(boxGeometry, boxMaterial);
+    const p = (i / numBoxes + Math.random() * 0.1) % 1;
+    const pos = tubeGeometry.parameters.path.getPointAt(p);
+    pos.x += Math.random() - 0.4;
+    pos.y += Math.random() - 0.4;
+    box.position.copy(pos);
+    const rote = new THREE.Vector3(
+        Math.random() * Math.PI,
+        Math.random() * Math.PI,
+        Math.random() * Math.PI
+    );
+    box.rotation.set(rote.x, rote.y, rote.z);
+    const edges = new THREE.EdgesGeometry(boxGeometry, 0.2);
+    const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff });
+    const boxLines = new THREE.LineSegments(edges, lineMat);
+    boxLines.position.copy(pos);
+    boxLines.rotation.set(rote.x, rote.y, rote.z);
+    scene.add(boxLines);
+}
+
+
 function updateCamera(t) {
     const time = t * 0.5;
     const looptime = 20*1000;
     const p = (time % looptime) / looptime;
     const pos = tubeGeometry.parameters.path.getPointAt(p);
-    const lookAt = tubeGeometry.parameters.path.getPointAt((p+0.01));
+    const lookAt = tubeGeometry.parameters.path.getPointAt((p+0.01)%1);
     camera.position.copy(pos);
     camera.lookAt(lookAt);
 }
