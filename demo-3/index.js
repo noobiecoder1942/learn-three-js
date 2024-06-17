@@ -22,17 +22,57 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.03;
 
 const tubeGeometry = new THREE.TubeGeometry(spline, 222, 0.65, 16, true);
-const tubeMaterial = new THREE.MeshBasicMaterial({
-    color: 0x0099ff,
-    side: THREE.DoubleSide,
-    wireframe: true
+
+const vertexShader = `
+    varying float vY;
+    void main() {
+        vY = position.y;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+`;
+
+const fragmentShader = `
+    varying float vY;
+
+    vec3 getColor(float t) {
+        vec3 color1 = vec3(0.0, 0.0, 1.0); // Blue
+        vec3 color2 = vec3(0.0, 1.0, 0.0); // Green
+        vec3 color3 = vec3(1.0, 1.0, 0.0); // Yellow
+        vec3 color4 = vec3(1.0, 0.0, 0.0); // Red
+
+        if (t < 0.33) {
+            float normalizedT = t / 0.33;
+            return mix(color1, color2, normalizedT);
+        } else if (t < 0.66) {
+            float normalizedT = (t - 0.33) / 0.33;
+            return mix(color2, color3, normalizedT);
+        } else {
+            float normalizedT = (t - 0.66) / 0.34;
+            return mix(color3, color4, normalizedT);
+        }
+    }
+
+    void main() {
+        float minY = -1.8; // Adjust these values based on your geometry's Y range
+        float maxY = 5.96;
+        float t = (vY - minY) / (maxY - minY);
+        vec3 color = getColor(t);
+        gl_FragColor = vec4(color, 0.8); // Set alpha to 1.0 for full opacity
+    }
+`;
+const tubeMaterial = new THREE.ShaderMaterial({
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader,
+    side: THREE.DoubleSide
 });
 
-const edges = new THREE.EdgesGeometry(tubeGeometry, 0.2);
-const lineMaterial = new THREE.LineBasicMaterial({
-    color: 0xffffff
-});
-const tubeLines = new THREE.LineSegments(edges, lineMaterial);
+const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
+scene.add(tube);
+
+
+const wireframeGeometry = new THREE.EdgesGeometry(tubeGeometry);
+const wireframeMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+const tubeLines = new THREE.LineSegments(wireframeGeometry, wireframeMaterial);
 scene.add(tubeLines);
 
 const numBoxes = 50;
@@ -83,3 +123,9 @@ function animate(t = 0) {
 }
 
 animate();
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
